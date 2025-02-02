@@ -1,6 +1,6 @@
 import express, { IRouter } from 'express';
 import NoteController from '../controllers/note.controller';
-import { createNoteValidation, updateNoteValidation } from '../validators/note.validator';
+import { createNoteValidation } from '../validators/note.validator';
 
 class NoteRoutes {
     private NoteController = new NoteController();

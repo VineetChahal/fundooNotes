@@ -1,4 +1,3 @@
-// src/services/note.services.ts
 import { Note } from '../models/note.model';
 
 // create note
