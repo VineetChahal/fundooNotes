@@ -1,13 +1,24 @@
-import express from 'express';
-import { register, login } from '../controllers/user.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import express, { IRouter } from 'express';
+import UserController from '../controllers/user.controller'; // Import controllers
+import { registerValidation, loginValidation } from '../validators/user.validator'; // Import validators
 
-const router = express.Router();
+class UserRoutes {
+    private UserController = new UserController();
+    private router = express.Router();
 
-router.post('/register', register);
-router.post('/login', login);
-router.get('/protected', authenticate, (req, res) => {
-    res.json({ message: 'This is a protected route' });
-});
+    constructor() {
+        this.routes();
+    }
 
-export default router;
+    private routes = () => {
+        // Add validation middleware and controller to routes
+        this.router.post('/register', registerValidation, this.UserController.register);
+        this.router.post('/login', loginValidation, this.UserController.login);
+    };
+
+    public getRoutes = (): IRouter => {
+        return this.router;
+    };
+}
+
+export default UserRoutes;
