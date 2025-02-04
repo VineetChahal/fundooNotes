@@ -1,6 +1,7 @@
 import express, { IRouter } from 'express';
 import NoteController from '../controllers/note.controller';
-import { createNoteValidation } from '../validators/note.validator';
+import { createNoteValidation, updateNoteValidation } from '../validators/note.validator';
+import { authenticate } from '../middlewares/auth.middleware';
 
 class NoteRoutes {
     private NoteController = new NoteController();
@@ -11,14 +12,10 @@ class NoteRoutes {
     }
 
     private routes = () => {
-        // Create a new note
-        this.router.post('/notes', createNoteValidation, this.NoteController.create);
-
-        // Get a note by ID
-        this.router.get('/notes/:id', this.NoteController.getById);
-
-        // Delete a note by ID
-        this.router.delete('/notes/:id', this.NoteController.deleteById);
+        this.router.post('/', createNoteValidation, authenticate, this.NoteController.create);
+        this.router.get('/:id', authenticate, this.NoteController.getById);
+        this.router.put('/:id', updateNoteValidation, authenticate, this.NoteController.updateById);
+        this.router.delete('/:id', authenticate, this.NoteController.deleteById);
     };
 
     public getRoutes = (): IRouter => {
