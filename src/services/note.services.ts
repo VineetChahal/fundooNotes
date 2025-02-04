@@ -10,6 +10,11 @@ export const getNoteById = async (noteId: string) => {
     return await Note.findById(noteId);
 };
 
+// update a node
+export const updateNoteById = async (noteId: string, updateData: any) => {
+    return await Note.findByIdAndUpdate(noteId, updateData, { new: true });
+};
+
 // delete note
 export const deleteNoteById = async (noteId: string) => {
     return await Note.findByIdAndDelete(noteId);
