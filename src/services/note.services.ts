@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Note } from '../models/note.model';
 
 // create note
@@ -8,6 +9,11 @@ export const createNote = async (noteData: any) => {
 // get note
 export const getNoteById = async (noteId: string) => {
     return await Note.findById(noteId);
+};
+
+//get all notes
+export const getNotesByUserId = async (userId: string) => {
+    return await Note.find({ userId: new mongoose.Types.ObjectId(userId) });
 };
 
 // update a node
