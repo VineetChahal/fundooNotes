@@ -7,7 +7,9 @@ const userSchema = new mongoose.Schema<IUser>({
     username: {type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    note:{type: mongoose.Schema.Types.ObjectId, ref: 'Note'}
+    note:{type: mongoose.Schema.Types.ObjectId, ref: 'Note'},
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
 });
 
 export const User = mongoose.model<IUser>('User', userSchema);
