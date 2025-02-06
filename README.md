@@ -1,4 +1,4 @@
-# Fundoo Notes - User Module
+# Fundoo Notes
 
 ## Overview
 Fundoo Notes is a note-taking application built using Node.js, Express, and MongoDB. This module focuses on user authentication and authorization features.
@@ -8,6 +8,7 @@ Fundoo Notes is a note-taking application built using Node.js, Express, and Mong
 - User Login with JWT Authentication
 - Password Encryption using bcrypt
 - Protected Routes with Middleware Authentication
+- Notes - can perform CRUD Operations
 
 ## Tech Stack
 - **Backend:** Node.js, Express.js
@@ -19,7 +20,7 @@ Fundoo Notes is a note-taking application built using Node.js, Express, and Mong
 
 1. Clone the repository:
    ```sh
-   git clone -b feature/user-module https://github.com/VineetChahal/fundooNotes.git
+   git clone https://github.com/VineetChahal/fundooNotes.git
    cd fundooNotes
    ```
 
@@ -40,11 +41,4 @@ Fundoo Notes is a note-taking application built using Node.js, Express, and Mong
    ```sh
    npm start
    ```
-
-## API Endpoints
-| Method | Endpoint     | Description                                      |
-|--------|------------|--------------------------------------------------|
-| POST   | /register  | Register a new user                              |
-| POST   | /login     | Authenticate user and return JWT                 |
-| GET    | /protected | Access a protected route (requires authentication) |
 
