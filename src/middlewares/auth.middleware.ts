@@ -4,7 +4,7 @@ import { verifyToken } from '../utils/jwt';
 
 export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
     const token = req.header('Authorization')?.split(' ')[1];
-    console.log("token ---------------------------," + token);
+    // console.log("token ---------------------------," + token);
     
     if (!token) {
         res.status(401).json({ message: 'Access denied' });
