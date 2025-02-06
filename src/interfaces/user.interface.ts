@@ -5,4 +5,6 @@ export interface IUser {
     email: string;
     password: string;
     note: Object;
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
 }
