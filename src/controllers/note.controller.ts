@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {createNote, getNoteById, updateNoteById, deleteNoteById,} from '../services/note.services';
+import {createNote, getNoteById,getNotesByUserId, updateNoteById, deleteNoteById,} from '../services/note.services';
 
 export default class NoteController {
     public create = async (req: Request, res: Response): Promise<void> => {
@@ -19,6 +19,17 @@ export default class NoteController {
                 return;
             }
             res.status(200).json({ note });
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    };
+
+    public getAll = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const userId = req.body.userId; // Get userId from JWT token
+            console.log('userId ==============>>>>>>>>>>>>', userId);
+            const notes = await getNotesByUserId(userId); // Fetch notes based on userId
+            res.status(200).json({ notes });
         } catch (error: any) {
             res.status(500).json({ message: error.message });
         }
