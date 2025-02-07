@@ -2,6 +2,8 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Express } from 'express';
 
+const PORT = process.env.PORT || 3000; // Ensure PORT is available
+
 const options = {
     definition: {
       openapi: '3.0.0',
@@ -12,7 +14,7 @@ const options = {
       },
       servers: [
         {
-          url: 'http://localhost:${PORT}/api',
+          url: `http://localhost:${PORT}/api`,
         },
       ],
       components: {
@@ -26,8 +28,7 @@ const options = {
       },
     },
     apis: ['./src/routes/*.ts'],
-  };
-  
+};
 
 const swaggerSpec = swaggerJsdoc(options);
 
