@@ -1,5 +1,10 @@
-// import { Request, Response } from 'express';
-// import {createNote, getNoteById,getNotesByUserId, updateNoteById, deleteNoteById,} from '../services/note.services';
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import logger from '../utils/logger';
+import { createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById } from '../services/note.services';
+
+
+//-----------------------------------------------------------------------------------------
 
 // export default class NoteController {
 //     public create = async (req: Request, res: Response): Promise<void> => {
@@ -68,10 +73,8 @@
 
 // }
 
-import { Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import logger from '../utils/logger';
-import { createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById } from '../services/note.services';
+//----------------------------------------------------------------------------------
+
 
 export default class NoteController {
     public create = async (req: Request, res: Response): Promise<void> => {

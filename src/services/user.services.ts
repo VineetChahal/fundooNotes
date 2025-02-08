@@ -1,8 +1,14 @@
-// import { User } from '../models/user.model';
-// import bcrypt from 'bcryptjs';
-// import { generateToken } from '../utils/jwt';
+import { User } from '../models/user.model';
+import bcrypt from 'bcryptjs';
+import { generateToken } from '../utils/jwt';
+import { IUser } from '../interfaces/user.interface';
+import logger from '../utils/logger';
+import httpStatus from 'http-status';
+import { sendVerificationCode } from '../utils/mailer';
 
-// import { IUser } from '../interfaces/user.interface';
+
+//-------------------------------------------------------------------------------
+
 
 // export const registerUser = async (userData: IUser) => {
 //     // Check if user already exists with the same email or username
@@ -33,12 +39,8 @@
 //     return { token, user: { id: user._id, email: user.email, username: user.username } };
 // };
 
-import { User } from '../models/user.model';
-import bcrypt from 'bcryptjs';
-import { generateToken } from '../utils/jwt';
-import { IUser } from '../interfaces/user.interface';
-import logger from '../utils/logger';
-import httpStatus from 'http-status';
+//------------------------------------------------------------------------------------------
+
 
 export const registerUser = async (userData: IUser) => {
     try {
@@ -81,4 +83,44 @@ export const loginUser = async (userData: { email: string; password: string }) =
         logger.error('Error logging in user:', error);
         throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Error logging in' };
     }
+};
+
+export const forgotPassword = async (email: string) => {
+    logger.info('Password reset request received', { email });
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        logger.warn('User not found for password reset', { email });
+        throw new Error('User not found');
+    }
+
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordToken = verificationCode;
+    user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    await sendVerificationCode(email, `Your verification code is: ${verificationCode}`);
+    logger.info('Verification code sent for password reset', { email });
+};
+
+export const resetPassword = async (email: string, verificationCode: string, newPassword: string) => {
+    logger.info('Password reset request received', { email, verificationCode });
+
+    const user = await User.findOne({
+        email,
+        resetPasswordToken: verificationCode,
+        resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+        logger.warn('Invalid or expired verification code', { email, verificationCode });
+        throw new Error('Invalid or expired verification code');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    logger.info('Password reset successful', { email });
 };

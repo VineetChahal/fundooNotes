@@ -1,15 +1,11 @@
-// import express, { IRouter } from 'express';
-// import NoteController from '../controllers/note.controller';
-// import { createNoteValidation, updateNoteValidation } from '../validators/note.validator';
-// import { authenticate } from '../middlewares/auth.middleware';
+import express, { IRouter } from 'express';
+import NoteController from '../controllers/note.controller';
+import { createNoteValidation, updateNoteValidation } from '../validators/note.validator';
+import { authenticate } from '../middlewares/auth.middleware';
+import logger from '../utils/logger';
 
-// class NoteRoutes {
-//     private NoteController = new NoteController();
-//     private router = express.Router();
 
-//     constructor() {
-//         this.routes();
-//     }
+//---------------------------------------------------------------------------------
 
 //     private routes = () => {
 //         this.router.post('/', createNoteValidation, authenticate, this.NoteController.create);
@@ -19,18 +15,8 @@
 //         this.router.delete('/:id', authenticate, this.NoteController.deleteById);
 //     };
 
-//     public getRoutes = (): IRouter => {
-//         return this.router;
-//     };
-// }
+//-------------------------------------------------------------------------
 
-// export default NoteRoutes;
-
-import express, { IRouter } from 'express';
-import NoteController from '../controllers/note.controller';
-import { createNoteValidation, updateNoteValidation } from '../validators/note.validator';
-import { authenticate } from '../middlewares/auth.middleware';
-import logger from '../utils/logger';
 
 class NoteRoutes {
     private NoteController = new NoteController();

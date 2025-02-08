@@ -1,8 +1,10 @@
-// import express, { IRouter } from 'express';
-// import UserRoutes from './user.route'; // import user routes
-// import NoteRoutes from './note.route'; // Import note routes
+import express, { IRouter } from 'express';
+import UserRoutes from './user.route';
+import NoteRoutes from './note.route';
+import logger from '../utils/logger';
 
-// const router = express.Router();
+
+//---------------------------------------------------------------------------
 
 // const routes = (): IRouter => {
 //     router.get('/', (req, res) => {
@@ -14,12 +16,8 @@
 //     return router;
 // };
 
-// export default routes;
+//-----------------------------------------------------------------------------
 
-import express, { IRouter } from 'express';
-import UserRoutes from './user.route';
-import NoteRoutes from './note.route';
-import logger from '../utils/logger';
 
 const router = express.Router();
 

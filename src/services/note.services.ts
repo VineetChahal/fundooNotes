@@ -1,5 +1,11 @@
-// import mongoose from 'mongoose';
-// import { Note } from '../models/note.model';
+import mongoose from 'mongoose';
+import { Note } from '../models/note.model';
+import { INote } from '../interfaces/note.interface';
+import logger from '../utils/logger';
+import httpStatus from 'http-status';
+
+
+//--------------------------------------------------------------------------------
 
 // // create note
 // import { INote } from '../interfaces/note.interface';
@@ -27,11 +33,8 @@
 //     return await Note.findByIdAndDelete(noteId);
 // };
 
-import mongoose from 'mongoose';
-import { Note } from '../models/note.model';
-import { INote } from '../interfaces/note.interface';
-import logger from '../utils/logger';
-import httpStatus from 'http-status';
+//----------------------------------------------------------------------
+
 
 // Create note
 export const createNote = async (noteData: INote) => {

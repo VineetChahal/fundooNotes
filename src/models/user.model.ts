@@ -1,5 +1,9 @@
-// import mongoose from 'mongoose';
-// import { IUser } from '../interfaces/user.interface';
+import mongoose from 'mongoose';
+import { IUser } from '../interfaces/user.interface';
+import logger from '../utils/logger';
+
+
+//-----------------------------------------------------------------------
 
 // const userSchema = new mongoose.Schema<IUser>({
 //     firstName: { type: String, required: true },
@@ -12,11 +16,8 @@
 //     resetPasswordExpires: { type: Date },
 // });
 
-// export const User = mongoose.model<IUser>('User', userSchema);
+//--------------------------------------------------------------------------
 
-import mongoose from 'mongoose';
-import { IUser } from '../interfaces/user.interface';
-import logger from '../utils/logger';
 
 // Define User Schema
 const userSchema = new mongoose.Schema<IUser>({

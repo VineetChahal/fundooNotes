@@ -1,14 +1,10 @@
-// import express, { IRouter } from 'express';
-// import UserController from '../controllers/user.controller'; // Import controllers
-// import { registerValidation, loginValidation } from '../validators/user.validator'; // Import validators
+import express, { IRouter } from 'express';
+import UserController from '../controllers/user.controller'; // Import controllers
+import { registerValidation, loginValidation } from '../validators/user.validator'; // Import validators
+import logger from '../utils/logger';
 
-// class UserRoutes {
-//     private UserController = new UserController();
-//     private router = express.Router();
 
-//     constructor() {
-//         this.routes();
-//     }
+//-----------------------------------------------------------------------------------
 
 //     private routes = () => {
 //         this.router.post('/register', registerValidation, this.UserController.register);
@@ -17,17 +13,8 @@
 //         this.router.post('/reset-password', this.UserController.resetPassword);
 //     };
 
-//     public getRoutes = (): IRouter => {
-//         return this.router;
-//     };
-// }
+//--------------------------------------------------------------------------------
 
-// export default UserRoutes;
-
-import express, { IRouter } from 'express';
-import UserController from '../controllers/user.controller'; // Import controllers
-import { registerValidation, loginValidation } from '../validators/user.validator'; // Import validators
-import logger from '../utils/logger';
 
 class UserRoutes {
     private UserController = new UserController();
@@ -48,13 +35,13 @@ class UserRoutes {
             next();
         }, this.UserController.login);
 
-        this.router.post('/forgot-password', (req, res, next) => {
+        this.router.post('/forgotPassword', (req, res, next) => {
             logger.info('POST /users/forgot-password - Forgot password request');
             next();
         }, this.UserController.forgotPassword);
 
-        this.router.post('/reset-password', (req, res, next) => {
-            logger.info('POST /users/reset-password - Resetting password');
+        this.router.post('/resetPassword', (req, res, next) => {
+            logger.info('POST /users/resetPassword - Resetting password');
             next();
         }, this.UserController.resetPassword);
     };

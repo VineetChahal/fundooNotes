@@ -1,5 +1,9 @@
-// import mongoose from 'mongoose';
-// import { INote } from '../interfaces/note.interface';
+import mongoose from 'mongoose';
+import { INote } from '../interfaces/note.interface';
+import logger from '../utils/logger';
+
+
+//-------------------------------------------------------------------
 
 // const noteSchema = new mongoose.Schema<INote>({
 //     title: { type: String, required: true },
@@ -9,11 +13,8 @@
 //     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true } // user id to create a link between note and user
 // });
 
-// export const Note = mongoose.model<INote>('Note', noteSchema);
+//--------------------------------------------------------------------
 
-import mongoose from 'mongoose';
-import { INote } from '../interfaces/note.interface';
-import logger from '../utils/logger';
 
 // Define Note Schema
 const noteSchema = new mongoose.Schema<INote>({

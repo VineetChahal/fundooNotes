@@ -116,7 +116,7 @@ const swaggerDocument = {
             }
           },
             //-------------------------------------------------------forgot password------------------------------------------------
-          "/users/forgot-password": {
+          "/users/forgotPassword": {
             "post": {
               "summary": "Sends a reset password email to the user",
               "tags": ["Users"],
@@ -141,7 +141,7 @@ const swaggerDocument = {
             }
           },
             //-------------------------------------------------------reset password------------------------------------------------
-          "/users/reset-password": {
+          "/users/resetPassword": {
             "post": {
               "summary": "Resets the user's password",
               "tags": ["Users"],

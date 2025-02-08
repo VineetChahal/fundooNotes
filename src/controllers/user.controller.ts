@@ -1,12 +1,16 @@
-// import { Request, Response } from 'express';
-// import { validationResult } from 'express-validator';
-// import { registerUser, loginUser } from '../services/user.services';
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import { registerUser, loginUser, resetPassword, forgotPassword} from '../services/user.services';
+import { StatusCodes } from 'http-status-codes';
+import logger from '../utils/logger';
+
+
+//------------------------------------------------------------------------------
 // import { sendVerificationCode } from '../utils/mailer';
 // import bcrypt from 'bcryptjs';
 // import { User } from '../models/user.model';
 
 // export default class UserController {
-
 //     public register = async (req: Request, res: Response): Promise<void> => {
 //         // Check for validation errors
 //         const errors = validationResult(req);
@@ -113,14 +117,8 @@
 //     };
 // }
 
-import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
-import { registerUser, loginUser } from '../services/user.services';
-import { sendVerificationCode } from '../utils/mailer';
-import bcrypt from 'bcryptjs';
-import { User } from '../models/user.model';
-import { StatusCodes } from 'http-status-codes';
-import logger from '../utils/logger';
+//------------------------------------------------------------------------------------------
+
 
 export default class UserController {
     public register = async (req: Request, res: Response): Promise<void> => {
@@ -159,48 +157,30 @@ export default class UserController {
 
     public forgotPassword = async (req: Request, res: Response): Promise<void> => {
         const { email } = req.body;
+    
         try {
-            const user = await User.findOne({ email });
-            if (!user) {
-                logger.warn('User not found for password reset', { email });
-                res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
-                return;
-            }
-            const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-            user.resetPasswordToken = verificationCode;
-            user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000);
-            await user.save();
-            await sendVerificationCode(email, `Your verification code is: ${verificationCode}`);
-            logger.info('Verification code sent for password reset', { email });
+            await forgotPassword(email);
             res.status(StatusCodes.OK).json({ message: 'Verification code sent to your email' });
         } catch (error) {
-            logger.error('Forgot password error', { error });
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            logger.error('Forgot password error', { email, error: errorMessage });
+            res.status(errorMessage.includes('User not found') ? StatusCodes.NOT_FOUND : StatusCodes.INTERNAL_SERVER_ERROR)
+                .json({ message: errorMessage || 'Internal server error' });
         }
     };
 
+
     public resetPassword = async (req: Request, res: Response): Promise<void> => {
         const { email, verificationCode, newPassword } = req.body;
+    
         try {
-            const user = await User.findOne({
-                email,
-                resetPasswordToken: verificationCode,
-                resetPasswordExpires: { $gt: new Date() },
-            });
-            if (!user) {
-                logger.warn('Invalid or expired verification code', { email, verificationCode });
-                res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid or expired verification code' });
-                return;
-            }
-            user.password = await bcrypt.hash(newPassword, 10);
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
-            await user.save();
-            logger.info('Password reset successful', { email });
+            await resetPassword(email, verificationCode, newPassword);
             res.status(StatusCodes.OK).json({ message: 'Password reset successful' });
         } catch (error) {
-            logger.error('Error in password reset', { error });
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            logger.error('Error in password reset', { email, error: errorMessage });
+            res.status(errorMessage.includes('Invalid or expired verification code') ? StatusCodes.BAD_REQUEST : StatusCodes.INTERNAL_SERVER_ERROR)
+                .json({ message: errorMessage || 'Internal server error' });
         }
     };
 }

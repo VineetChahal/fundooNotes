@@ -1,8 +1,10 @@
-// import jwt from 'jsonwebtoken';
-// import dotenv from 'dotenv';
-// dotenv.config();
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import logger from './logger';
+import httpStatus from 'http-status';
 
-// const JWT_SECRET = process.env.JWT_SECRET!;
+
+//--------------------------------------------------------------------
 
 // export const generateToken = (payload: object) => {
 //     return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
@@ -12,11 +14,8 @@
 //     return jwt.verify(token, JWT_SECRET as string) as {id:string};
 // };
 
+//--------------------------------------------------------------------
 
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import logger from './logger';
-import httpStatus from 'http-status';
 
 dotenv.config();
 
