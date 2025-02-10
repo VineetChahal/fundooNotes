@@ -36,7 +36,7 @@ class UserRoutes {
         }, this.UserController.login);
 
         this.router.post('/forgotPassword', (req, res, next) => {
-            logger.info('POST /users/forgot-password - Forgot password request');
+            logger.info('POST /users/forgotPassword - Forgot password request');
             next();
         }, this.UserController.forgotPassword);
 

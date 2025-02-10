@@ -38,8 +38,10 @@ connectDB()
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    logger.info(`🚀 Server is running at http://localhost:${PORT}/api`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        logger.info(`🚀 Server is running at http://localhost:${PORT}/api`);
+    });
+}
 
 export default app;

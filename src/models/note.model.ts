@@ -22,6 +22,7 @@ const noteSchema = new mongoose.Schema<INote>({
     description: { type: String, required: true, trim: true },
     color: { type: String, default: '#FFFFFF', trim: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+    // drop coolection ->> istrash, isarchive, default true
 }, { timestamps: true });
 
 // Log model creation
