@@ -3,6 +3,8 @@ import { validationResult } from 'express-validator';
 import { registerUser, loginUser, resetPassword, forgotPassword} from '../services/user.services';
 import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger';
+import { IUser } from '../interfaces/user.interface';
+import { User } from '../models/user.model';
 
 
 //------------------------------------------------------------------------------
@@ -120,6 +122,16 @@ import logger from '../utils/logger';
 //------------------------------------------------------------------------------------------
 
 
+async function findUserByEmail(email: string): Promise<IUser | null> {
+    try {
+        const user = await User.findOne({ email });
+        return user;
+    } catch (error) {
+        logger.error('Error finding user by email', { email, error });
+        throw new Error('Error finding user by email');
+    }
+}
+
 export default class UserController {
     public register = async (req: Request, res: Response): Promise<void> => {
         const errors = validationResult(req);
@@ -128,12 +140,21 @@ export default class UserController {
             res.status(StatusCodes.BAD_REQUEST).json({ errors: errors.array() });
             return;
         }
+    
         try {
+            const existingUser = await findUserByEmail(req.body.email);
+            if (existingUser) {
+                logger.warn('User registration failed: Email already exists', { email: req.body.email });
+                res.status(StatusCodes.CONFLICT).json({ message: 'User already exists' });
+                return;
+            }
+    
             const user = await registerUser(req.body);
             logger.info('User registered successfully', { userId: user.id });
             res.status(StatusCodes.CREATED).json({ message: 'User registered successfully', user });
-        } catch (error) {
-            logger.error('Error in user registration', { error });
+        } catch (error: unknown) {
+            const errorMessage = (error as Error).message || 'Unknown error';
+            logger.error('Unexpected error during registration', { error: errorMessage });
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
         }
     };
@@ -151,7 +172,7 @@ export default class UserController {
             res.status(StatusCodes.OK).json({ message: 'Login successful', token });
         } catch (error) {
             logger.error('Error during login', { error });
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+            res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid credentials' });
         }
     };
 
@@ -168,8 +189,7 @@ export default class UserController {
                 .json({ message: errorMessage || 'Internal server error' });
         }
     };
-
-
+ 
     public resetPassword = async (req: Request, res: Response): Promise<void> => {
         const { email, verificationCode, newPassword } = req.body;
     
