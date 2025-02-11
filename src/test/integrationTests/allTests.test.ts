@@ -1,3 +1,3 @@
 // import './user.test.ts';
 // import "./note.test.ts";
-import "./userNote.test";
+import "./userNote.test.ts";
