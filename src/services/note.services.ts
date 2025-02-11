@@ -107,3 +107,21 @@ export const deleteNoteById = async (noteId: string) => {
         throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Error deleting note' };
     }
 };
+
+
+//--------------------------------------------------------------------------------- 
+
+// move note to trash
+export const moveToTrash = async (noteId: string) => {
+    return await Note.findByIdAndUpdate(noteId, { isTrash: true }, { new: true });
+  };
+  
+  // archive note
+  export const archiveNote = async (noteId: string) => {
+    return await Note.findByIdAndUpdate(noteId, { isArchive: true }, { new: true });
+  };
+  
+  // unarchive note
+  export const unarchiveNote = async (noteId: string) => {
+    return await Note.findByIdAndUpdate(noteId, { isArchive: false }, { new: true });
+  };

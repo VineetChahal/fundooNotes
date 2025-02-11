@@ -51,6 +51,9 @@ class NoteRoutes {
             logger.info(`DELETE /notes/${req.params.id} - Deleting a note`);
             next();
         }, this.NoteController.deleteById);
+
+        this.router.patch('/:id/isTrash', authenticate, this.NoteController.moveToTrash);
+        this.router.patch('/:id/isArchive', authenticate, this.NoteController.toggleArchive);
     };
 
     public getRoutes = (): IRouter => {

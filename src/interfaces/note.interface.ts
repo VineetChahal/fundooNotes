@@ -6,4 +6,6 @@ export interface INote extends Document {
     color: string;
     // userId: string;
     userId: ObjectId; // To associate the note with a user
+    isTrash: boolean;
+    isArchive: boolean;
 }

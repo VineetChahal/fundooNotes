@@ -21,7 +21,9 @@ const noteSchema = new mongoose.Schema<INote>({
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
     color: { type: String, default: '#FFFFFF', trim: true },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+    isTrash: {type: Boolean, default: false},
+    isArchive: {type: Boolean, default: false},
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     // drop coolection ->> istrash, isarchive, default true
 }, { timestamps: true });
 

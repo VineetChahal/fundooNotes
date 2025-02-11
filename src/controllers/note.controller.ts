@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger';
-import { createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById } from '../services/note.services';
+import { Note } from '../models/note.model';
+
+import { createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById , moveToTrash, /** archiveNote, unarchiveNote , toggleTrash, toggleArchive, getArchivedNotes, getTrashNotes, getUserNotes */} from '../services/note.services';
 
 
 //-----------------------------------------------------------------------------------------
@@ -151,4 +153,42 @@ export default class NoteController {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errorMessage });
         }
     };
+
+public moveToTrash = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const note = await moveToTrash(req.params.id);
+      if (!note) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: "Note not found" });
+        return;
+      }
+      res.status(StatusCodes.OK).json({ message: "Note moved to trash", note });
+    } catch (error: unknown) {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+    }
+  };
+
+  public toggleArchive = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { isArchive } = req.body; // Ensure you send { "isArchive": true } in the request
+      if (typeof isArchive !== "boolean") {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid value for isArchive" });
+        return;
+      }
+      
+      const note = await Note.findByIdAndUpdate(req.params.id, { isArchive }, { new: true });
+      if (!note) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: "Note not found" });
+        return;
+      }
+  
+      res.status(StatusCodes.OK).json({ message: `Note ${isArchive ? 'archived' : 'unarchived'}`, note });
+    } catch (error: unknown) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+        message: error instanceof Error ? error.message : 'An unknown error occurred' 
+      });
+    }
+  };
+  
 }
