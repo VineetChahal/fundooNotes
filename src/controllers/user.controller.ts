@@ -5,7 +5,9 @@ import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger';
 import { IUser } from '../interfaces/user.interface';
 import { User } from '../models/user.model';
-import Redis from 'ioredis';
+// import Redis from 'ioredis';
+// const redisClient = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379');
+import { redisClient } from '../config/redis'
 
 
 // //------------------------------------------------------------------------------
@@ -122,93 +124,6 @@ import Redis from 'ioredis';
 
 // //------------------------------------------------------------------------------------------
 
-
-// async function findUserByEmail(email: string): Promise<IUser | null> {
-//     try {
-//         const user = await User.findOne({ email });
-//         return user;
-//     } catch (error) {
-//         logger.error('Error finding user by email', { email, error });
-//         throw new Error('Error finding user by email');
-//     }
-// }
-
-// export default class UserController {
-//     public register = async (req: Request, res: Response): Promise<void> => {
-//         const errors = validationResult(req);
-//         if (!errors.isEmpty()) {
-//             logger.warn('Validation errors during registration', { errors: errors.array() });
-//             res.status(StatusCodes.BAD_REQUEST).json({ errors: errors.array() });
-//             return;
-//         }
-    
-//         try {
-//             const existingUser = await findUserByEmail(req.body.email);
-//             if (existingUser) {
-//                 logger.warn('User registration failed: Email already exists', { email: req.body.email });
-//                 res.status(StatusCodes.CONFLICT).json({ message: 'User already exists' });
-//                 return;
-//             }
-    
-//             const user = await registerUser(req.body);
-//             logger.info('User registered successfully', { userId: user.id });
-//             res.status(StatusCodes.CREATED).json({ message: 'User registered successfully', user });
-//         } catch (error: unknown) {
-//             const errorMessage = (error as Error).message || 'Unknown error';
-//             logger.error('Unexpected error during registration', { error: errorMessage });
-//             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
-//         }
-//     };
-
-//     public login = async (req: Request, res: Response): Promise<void> => {
-//         const errors = validationResult(req);
-//         if (!errors.isEmpty()) {
-//             logger.warn('Validation errors during login', { errors: errors.array() });
-//             res.status(StatusCodes.BAD_REQUEST).json({ errors: errors.array() });
-//             return;
-//         }
-//         try {
-//             const token = await loginUser(req.body);
-//             logger.info('User logged in successfully', { email: req.body.email });
-//             res.status(StatusCodes.OK).json({ message: 'Login successful', token });
-//         } catch (error) {
-//             logger.error('Error during login', { error });
-//             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid credentials' });
-//         }
-//     };
-
-//     public forgotPassword = async (req: Request, res: Response): Promise<void> => {
-//         const { email } = req.body;
-    
-//         try {
-//             await forgotPassword(email);
-//             res.status(StatusCodes.OK).json({ message: 'Verification code sent to your email' });
-//         } catch (error) {
-//             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-//             logger.error('Forgot password error', { email, error: errorMessage });
-//             res.status(errorMessage.includes('User not found') ? StatusCodes.NOT_FOUND : StatusCodes.INTERNAL_SERVER_ERROR)
-//                 .json({ message: errorMessage || 'Internal server error' });
-//         }
-//     };
- 
-//     public resetPassword = async (req: Request, res: Response): Promise<void> => {
-//         const { email, verificationCode, newPassword } = req.body;
-    
-//         try {
-//             await resetPassword(email, verificationCode, newPassword);
-//             res.status(StatusCodes.OK).json({ message: 'Password reset successful' });
-//         } catch (error) {
-//             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-//             logger.error('Error in password reset', { email, error: errorMessage });
-//             res.status(errorMessage.includes('Invalid or expired verification code') ? StatusCodes.BAD_REQUEST : StatusCodes.INTERNAL_SERVER_ERROR)
-//                 .json({ message: errorMessage || 'Internal server error' });
-//         }
-//     };
-// }
-
-
-const redisClient = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379');
-
 async function findUserByEmail(email: string): Promise<IUser | null> {
     try {
         const cacheKey = `user:${email}`;
@@ -221,7 +136,7 @@ async function findUserByEmail(email: string): Promise<IUser | null> {
 
         const user = await User.findOne({ email });
         if (user) {
-            await redisClient.setex(cacheKey, 3600, JSON.stringify(user)); // Cache for 1 hour
+            await redisClient.setEx(cacheKey, 3600, JSON.stringify(user)); // Cache for 1 hour
         }
         return user;
     } catch (error) {
@@ -248,7 +163,7 @@ export default class UserController {
             }
     
             const user = await registerUser(req.body);
-            await redisClient.setex(`user:${user.email}`, 3600, JSON.stringify(user)); // Cache user after registration
+            await redisClient.setEx(`user:${user.email}`, 3600, JSON.stringify(user)); // Cache user after registration
             logger.info('User registered successfully', { userId: user.id });
             res.status(StatusCodes.CREATED).json({ message: 'User registered successfully', user });
         } catch (error: unknown) {
@@ -280,7 +195,7 @@ export default class UserController {
     
         try {
             await forgotPassword(email);
-            await redisClient.setex(`reset:${email}`, 300, 'pending'); // Store reset request for 5 minutes
+            await redisClient.setEx(`reset:${email}`, 300, 'pending'); // Store reset request for 5 minutes
             res.status(StatusCodes.OK).json({ message: 'Verification code sent to your email' });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';

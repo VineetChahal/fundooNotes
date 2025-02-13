@@ -4,7 +4,9 @@ import { generateToken } from '../utils/jwt';
 import { IUser } from '../interfaces/user.interface';
 import logger from '../utils/logger';
 import httpStatus from 'http-status';
-import { sendVerificationCode } from '../utils/mailer';
+// import { sendVerificationCode } from '../utils/mailer';
+import { queueEmail } from '../utils/mailer';
+
 
 
 //-------------------------------------------------------------------------------
@@ -99,7 +101,8 @@ export const forgotPassword = async (email: string) => {
     user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    await sendVerificationCode(email, `Your verification code is: ${verificationCode}`);
+    // await sendVerificationCode(email, `Your verification code is: ${verificationCode}`);
+    await queueEmail(email, verificationCode);
     logger.info('Verification code sent for password reset', { email });
 };
 

@@ -1,4 +1,5 @@
-import { createRabbitMQConnection, QUEUE_NAME } from "../config/rabbitmq";
+import { createRabbitMQConnection } from "../config/rabbitmq";
+const QUEUE_NAME = process.env.QUEUE_NAME || "EmailQueue";
 
 export const sendMessageToQueue = async (message: object) => {
     const { channel } = await createRabbitMQConnection();
