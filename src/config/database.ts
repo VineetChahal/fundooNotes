@@ -1,6 +1,7 @@
-// import mongoose from 'mongoose';
-// import dotenv from 'dotenv';
-// dotenv.config();
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Redis from 'ioredis';
+import logger from '../utils/logger';
 
 // const MONGO_URI = process.env.MONGO_URI!;
 
@@ -15,12 +16,17 @@
 // };
 
 
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import logger from '../utils/logger';
+
 dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI!;
+const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+
+// Initialize Redis
+export const redisClient = new Redis(REDIS_URL);
+
+redisClient.on('connect', () => logger.info('Redis connected'));
+redisClient.on('error', (err) => logger.error(`Redis error: ${err}`));
 
 export const connectDB = async () => {
     try {
