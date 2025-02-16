@@ -146,6 +146,7 @@ async function findUserByEmail(email: string): Promise<IUser | null> {
 }
 
 export default class UserController {
+
     public register = async (req: Request, res: Response): Promise<void> => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

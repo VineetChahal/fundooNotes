@@ -1,7 +1,8 @@
-// import { Request, Response, NextFunction } from 'express';
-// import { verifyToken } from '../utils/jwt';
-// import { StatusCodes } from 'http-status-codes';
-// import logger from '../utils/logger'; // Import centralized logger
+import { Request, Response, NextFunction } from 'express';
+import { verifyToken } from '../utils/jwt';
+import { StatusCodes } from 'http-status-codes';
+import logger from '../utils/logger';
+import Redis from 'ioredis';
 
 
 // //------------------------------------------------------------------------------
@@ -27,34 +28,6 @@
 
 // //-----------------------------------------------------------------------
 
-
-// export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
-//     const token = req.header('Authorization')?.split(' ')[1];
-
-//     if (!token) {
-//         logger.warn(`Access denied: No token provided - IP: ${req.ip}, Route: ${req.originalUrl}`);
-//         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Access denied' });
-//         return;
-//     }
-
-//     try {
-//         const tokenValue = verifyToken(token);
-//         logger.info(`Token verified successfully - User ID: ${tokenValue.id}, Route: ${req.originalUrl}`);
-//         req.body.userId = tokenValue.id;
-//         next();
-//     } catch (error) {
-//         const errorMessage = (error as Error).message;
-//         logger.error(`Invalid token - IP: ${req.ip}, Route: ${req.originalUrl}, Error: ${errorMessage}`);
-//         res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid token' });
-//     }
-// };
-
-
-import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/jwt';
-import { StatusCodes } from 'http-status-codes';
-import logger from '../utils/logger';
-import Redis from 'ioredis';
 
 const redis = new Redis();
 

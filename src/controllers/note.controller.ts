@@ -12,7 +12,7 @@ import {
     deleteNoteById,
     moveToTrash,
 } from '../services/note.services';
-import { sendMessageToQueue } from "../services/producer";
+// import { sendMessageToQueue } from "../services/producer";
 
 // //-----------------------------------------------------------------------------------------
 
@@ -92,16 +92,19 @@ export default class NoteController {
             const note = await createNote(req.body);
             logger.info('Note created successfully', { note });
     
-            // Send message to RabbitMQ
-            await sendMessageToQueue({ action: "CREATE_NOTE", note });
+            // Sending message to RabbitMQ
+            // await sendMessageToQueue({ action: "CREATE_NOTE", note });
     
-            // Add new note to Redis list instead of fetching everything from DB
+            // Redis cache key for user's notes
             const cacheKey = `notes:${req.body.userId}`;
     
-            // Check if list exists before pushing
-            const listExists = await redisClient.exists(cacheKey);
-            if (listExists) {
-                await redisClient.lPush(cacheKey, JSON.stringify(note)); // Push new note to the start of the list
+            // Fetch all notes from the database when a new note is created
+            const allNotes = await getNotesByUserId(req.body.userId);
+    
+            // Update the Redis list with all notes
+            await redisClient.del(cacheKey); // Clear existing cache
+            for (const n of allNotes) {
+                await redisClient.rPush(cacheKey, JSON.stringify(n));
             }
     
             // Cache the new note separately
@@ -113,9 +116,7 @@ export default class NoteController {
             logger.error('Error creating note', { error: errorMessage });
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errorMessage });
         }
-    };
-    
-    
+    };    
 
     public getById = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -222,16 +223,19 @@ export default class NoteController {
     
             // Fetch cached notes list
             const cacheKey = `notes:${userId}`;
-            const cachedNotes = await redisClient.lRange(cacheKey, 0, -1);
+            // const cachedNotes = await redisClient.lRange(cacheKey, 0, -1);
 
-            if (cachedNotes.length > 0) {
-                const updatedNotes = cachedNotes.filter(n => JSON.parse(n)._id !== noteId);
-                await redisClient.del(cacheKey);
-                for (const n of updatedNotes) {
-                    await redisClient.rPush(cacheKey, n);
-                }
-            }
-    
+            // if (cachedNotes.length > 0) {
+            //     const updatedNotes = cachedNotes.filter(n => JSON.parse(n)._id !== noteId);
+            //     await redisClient.del(cacheKey);
+            //     for (const n of updatedNotes) {
+            //         await redisClient.rPush(cacheKey, n);
+            //     }
+            // }
+
+             // Removing the deleted note directly from Redis List
+            await redisClient.lRem(cacheKey, 1, JSON.stringify(note));
+
             // Invalidate individual note cache
             await redisClient.del(`note:${noteId}`);
     

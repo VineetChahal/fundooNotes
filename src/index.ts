@@ -6,7 +6,7 @@ import { setupSwagger } from './swagger/swagger';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument } from './swagger/swaggerDocument';
 import logger from './utils/logger';
-import { startConsumer } from "./services/consumer";
+// import { startConsumer } from "./rabbitMQ/consumer";
 
 
 //-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(express.json());
 app.use('/api', routes());
 
-startConsumer();
+// startConsumer();
 
 // Connect to Database
 connectDB()

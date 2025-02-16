@@ -5,7 +5,7 @@ import { IUser } from '../interfaces/user.interface';
 import logger from '../utils/logger';
 import httpStatus from 'http-status';
 // import { sendVerificationCode } from '../utils/mailer';
-import { queueEmail } from '../utils/mailer';
+import { queueEmail , queueWelcomeEmail} from '../utils/mailer';
 
 
 
@@ -63,6 +63,10 @@ export const registerUser = async (userData: IUser) => {
         userData.password = await bcrypt.hash(userData.password, 10);
         const user = await User.create(userData);
         logger.info(`User registered successfully with ID ${user._id}`);
+
+        // Queue welcome email
+        await queueWelcomeEmail(user.email, user.username);
+
         return user;
     } catch (error) {
         logger.error('Error registering user:', error);
@@ -103,6 +107,7 @@ export const forgotPassword = async (email: string) => {
 
     // await sendVerificationCode(email, `Your verification code is: ${verificationCode}`);
     await queueEmail(email, verificationCode);
+    logger.info('verificationCode for email is ', { verificationCode });
     logger.info('Verification code sent for password reset', { email });
 };
 

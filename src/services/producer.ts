@@ -1,12 +1,25 @@
-import { createRabbitMQConnection } from "../config/rabbitmq";
-const QUEUE_NAME = process.env.QUEUE_NAME || "EmailQueue";
+import amqp from 'amqplib';
+import logger from '../utils/logger';
 
-export const sendMessageToQueue = async (message: object) => {
-    const { channel } = await createRabbitMQConnection();
+const QUEUE_NAME = 'EmailQueue';
 
-    channel.sendToQueue(QUEUE_NAME, Buffer.from(JSON.stringify(message)), {
-        persistent: true,
-    });
+export async function queueEmail(email: string, verificationCode: string) {
+  try {
+    const connection = await amqp.connect('amqp://localhost');
+    const channel = await connection.createChannel();
 
-    console.log("📤 Sent message to queue:", message);
-};
+    await channel.assertQueue(QUEUE_NAME, { durable: true });
+
+    const message = JSON.stringify({ email, verificationCode });
+    console.log(`message being sent to ${QUEUE_NAME} is ${message}`);
+    
+    channel.sendToQueue(QUEUE_NAME, Buffer.from(message), { persistent: true });
+
+    logger.info(`📤 Message sent to queue: ${message}`);
+
+    await channel.close();
+    await connection.close();
+  } catch (error) {
+    logger.error(`❌ Error publishing message to queue: ${error}`);
+  }
+}
