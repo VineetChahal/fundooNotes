@@ -52,8 +52,14 @@ class NoteRoutes {
             next();
         }, this.NoteController.deleteById);
 
-        this.router.patch('/:id/isTrash', authenticate, this.NoteController.moveToTrash);
-        this.router.patch('/:id/isArchive', authenticate, this.NoteController.toggleArchive);
+        this.router.patch('/:id/isTrash', authenticate, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            logger.info(`PATCH /notes/${req.params.id} - Trashing a note`);
+            next();
+        }, this.NoteController.moveToTrash);
+        this.router.patch('/:id/isArchive', authenticate, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            logger.info(`PATCH /notes.${req.params.id} - Archiving a note`);
+            next();
+        },this.NoteController.toggleArchive);
     };
 
     public getRoutes = (): IRouter => {
