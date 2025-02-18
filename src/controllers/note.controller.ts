@@ -1,91 +1,13 @@
-
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger';
 import { Note } from '../models/note.model';
 import { redisClient } from '../config/redis';
-import {
-    createNote,
-    getNoteById,
-    getNotesByUserId,
-    updateNoteById,
-    deleteNoteById,
-    moveToTrash,
-} from '../services/note.services';
-// import { sendMessageToQueue } from "../services/producer";
+import {createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById, moveToTrash} from '../services/note.services';
 
-// //-----------------------------------------------------------------------------------------
-
-// // export default class NoteController {
-// //     public create = async (req: Request, res: Response): Promise<void> => {
-// //         try {
-// //             const note = await createNote(req.body);
-// //             res.status(201).json({ message: 'Note created successfully', note });
-// //         } catch (error: unknown) {
-// //             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-// //             res.status(500).json({ message: errorMessage });
-// //         }
-// //     };
-
-// //     public getById = async (req: Request, res: Response): Promise<void> => {
-// //         try {
-// //             const note = await getNoteById(req.params.id);
-// //             if (!note) {
-// //                 res.status(404).json({ message: 'Note not found' });
-// //                 return;
-// //             }
-// //             res.status(200).json({ note });
-// //         } catch (error: unknown) {
-// //             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-// //             res.status(500).json({ message: errorMessage });
-// //         }
-// //     };
-
-// //     public getAll = async (req: Request, res: Response): Promise<void> => {
-// //         try {
-// //             const userId = req.body.userId; // Get userId from JWT token
-// //             console.log('userId ==============>>>>>>>>>>>>', userId);
-// //             const notes = await getNotesByUserId(userId); // Fetch notes based on userId
-// //             res.status(200).json({ notes });
-// //         } catch (error: unknown) {
-// //             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-// //             res.status(500).json({ message: errorMessage });
-// //         }
-// //     };
-
-// //     public updateById = async (req: Request, res: Response): Promise<void> => {
-// //         try {
-// //             const note = await updateNoteById(req.params.id, req.body);
-// //             if (!note) {
-// //                 res.status(404).json({ message: 'Note not found' });
-// //                 return;
-// //             }
-// //             res.status(200).json({ message: 'Note updated successfully', note });
-// //         } catch (error: unknown) {
-// //             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-// //             res.status(500).json({ message: errorMessage });
-// //         }
-// //     };
-
-// //     public deleteById = async (req: Request, res: Response): Promise<void> => {
-// //         try {
-// //             const note = await deleteNoteById(req.params.id);
-// //             if (!note) {
-// //                 res.status(404).json({ message: 'Note not found' });
-// //                 return;
-// //             }
-// //             res.status(200).json({ message: 'Note deleted successfully' });
-// //         } catch (error: unknown) {
-// //             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-// //             res.status(500).json({ message: errorMessage });
-// //         }
-// //     };
-
-// // }
-
-// //----------------------------------------------------------------------------------
 
 export default class NoteController {
+    //--------------------------------------------------------CREATE-------------------------------------------------
 
     public create = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -102,12 +24,11 @@ export default class NoteController {
             const allNotes = await getNotesByUserId(req.body.userId);
     
             // Update the Redis list with all notes
-            await redisClient.del(cacheKey); // Clear existing cache
+            await redisClient.del(cacheKey);
             for (const n of allNotes) {
                 await redisClient.rPush(cacheKey, JSON.stringify(n));
             }
     
-            // Cache the new note separately
             await redisClient.set(`note:${note._id}`, JSON.stringify(note));
     
             res.status(StatusCodes.CREATED).json({ message: 'Note created successfully', note });
@@ -117,6 +38,9 @@ export default class NoteController {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errorMessage });
         }
     };    
+
+
+    //--------------------------------------------------------GET-BY-ID-------------------------------------------------
 
     public getById = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -147,6 +71,9 @@ export default class NoteController {
         }
     };
 
+
+    //--------------------------------------------------------GET-ALL-------------------------------------------------
+
     public getAll = async (req: Request, res: Response): Promise<void> => {
         try {
             const userId = req.body.userId;
@@ -172,6 +99,9 @@ export default class NoteController {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errorMessage });
         }
     };
+
+
+    //--------------------------------------------------------UPDATE-BY-ID-------------------------------------------------
 
     public updateById = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -209,12 +139,15 @@ export default class NoteController {
         }
     };
 
+
+    //--------------------------------------------------------DELETE-BY-ID-------------------------------------------------
+
     public deleteById = async (req: Request, res: Response): Promise<void> => {
         try {
             const noteId = req.params.id;
             const userId = req.body.userId;
     
-            const note = await deleteNoteById(noteId);
+            const note = await deleteNoteById(noteId, userId);
             if (!note) {
                 logger.warn('Note not found for deletion', { noteId });
                 res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'Note not found' });
@@ -252,6 +185,9 @@ export default class NoteController {
         }
     };
 
+
+    //--------------------------------------------------------MOVE-TO-TRASH-------------------------------------------------
+
     public moveToTrash = async (req: Request, res: Response): Promise<void> => {
         try {
             const note = await moveToTrash(req.params.id);
@@ -287,6 +223,9 @@ export default class NoteController {
             });
         }
     };
+
+
+    //--------------------------------------------------------TOGGLE-ARCHIVE-------------------------------------------------
 
     public toggleArchive = async (req: Request, res: Response): Promise<void> => {
         try {

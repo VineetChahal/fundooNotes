@@ -3,7 +3,6 @@ import UserController from '../controllers/user.controller'; // Import controlle
 import { registerValidation, loginValidation } from '../validators/user.validator'; // Import validators
 import logger from '../utils/logger';
 
-
 //-----------------------------------------------------------------------------------
 
 //     private routes = () => {
@@ -34,6 +33,11 @@ class UserRoutes {
             logger.info('POST /users/login - Logging in a user');
             next();
         }, this.UserController.login);
+
+        this.router.post('/logout', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+              logger.info('POST /users/logout - Logging out a user');
+              next();
+        }, this.UserController.logout);
 
         this.router.post('/forgotPassword', (req, res, next) => {
             logger.info('POST /users/forgotPassword - Forgot password request');

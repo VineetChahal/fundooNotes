@@ -3,23 +3,12 @@ import dotenv from 'dotenv';
 import logger from './logger';
 import httpStatus from 'http-status';
 
-
-//--------------------------------------------------------------------
-
-// export const generateToken = (payload: object) => {
-//     return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
-// };
-
-// export const verifyToken = (token: string) => {
-//     return jwt.verify(token, JWT_SECRET as string) as {id:string};
-// };
-
-//--------------------------------------------------------------------
-
-
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+
+
+//--------------------------------------------------------GENERATE-TOKEN-------------------------------------------------------
 
 export const generateToken = (payload: object) => {
     try {
@@ -31,6 +20,9 @@ export const generateToken = (payload: object) => {
         throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Error generating token' };
     }
 };
+
+
+//--------------------------------------------------------VERFIY-TOKEN---------------------------------------------------------
 
 export const verifyToken = (token: string) => {
     try {

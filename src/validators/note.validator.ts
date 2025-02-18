@@ -15,6 +15,9 @@
 import { body } from 'express-validator';
 import logger from '../utils/logger';
 
+
+//--------------------------------------------------------CREATE-NOTE-VALIDATION-----------------------------------------------
+
 export const createNoteValidation = [
     body('title')
         .isString()
@@ -41,6 +44,9 @@ export const createNoteValidation = [
             return true;
         }),
 ];
+
+
+//--------------------------------------------------------UPDATE-NOTE-VALIDATION-----------------------------------------------
 
 export const updateNoteValidation = [
     body('title')

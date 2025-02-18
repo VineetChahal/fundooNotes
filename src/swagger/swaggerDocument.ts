@@ -80,6 +80,56 @@ const swaggerDocument = {
         },
       },
     },
+    //-----------------------------------------------------------LOGOUT-USER--------------------------------------------------------
+    // "/users/logout": {
+    //   post: {
+    //     summary: "Logs out the current user",
+    //     tags: ["Users"],
+    //     requestBody: {
+    //       required: true,
+    //       content: {
+    //         "application/json": {
+    //           schema: {
+    //             type: "object",
+    //             // properties: {
+    //             //   token: { type: "string" },
+    //             // },
+    //             // required: ["token"],
+    //           },
+    //         },
+    //       },
+    //     },
+    //     responses: {
+    //       "200": { description: "Logout successful" },
+    //       "400": { description: "Bad request - Token required" },
+    //       "401": { description: "Unauthorized - Invalid token" },
+    //       "500": { description: "Internal server error" },
+    //     },
+    //   },
+    // },
+    "/users/logout": {
+      post: {
+        summary: "Logs out an existing user by invalidating their session",
+        tags: ["Users"],
+        security: [
+          {
+            Bearer: [],
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Logout successful",
+          },
+          "400": {
+            description: "No active session found",
+          },
+          "500": {
+            description: "Error logging out",
+          },
+        },
+      },
+    },
+
     //-------------------------------------------------------get all notes------------------------------------------------
     get: {
       summary: "Get all notes of the logged-in user",

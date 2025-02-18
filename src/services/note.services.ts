@@ -5,38 +5,8 @@ import logger from '../utils/logger';
 import httpStatus from 'http-status';
 
 
-//--------------------------------------------------------------------------------
+//-------------------------------------------------------Create note----------------------------------------------------
 
-// // create note
-// import { INote } from '../interfaces/note.interface';
-// export const createNote = async (noteData: INote) => {
-//     return await Note.create(noteData);
-// };
-
-// // get note
-// export const getNoteById = async (noteId: string) => {
-//     return await Note.findById(noteId);
-// };
-
-// //get all notes
-// export const getNotesByUserId = async (userId: string) => {
-//     return await Note.find({ userId: new mongoose.Types.ObjectId(userId) });
-// };
-
-// // update a node
-// export const updateNoteById = async (noteId: string, updateData: Partial<INote>) => {
-//     return await Note.findByIdAndUpdate(noteId, updateData, { new: true });
-// };
-
-// // delete note
-// export const deleteNoteById = async (noteId: string) => {
-//     return await Note.findByIdAndDelete(noteId);
-// };
-
-//----------------------------------------------------------------------
-
-
-// Create note
 export const createNote = async (noteData: INote) => {
     try {
         const note = await Note.create(noteData);
@@ -48,7 +18,9 @@ export const createNote = async (noteData: INote) => {
     }
 };
 
-// Get note by ID
+
+//-------------------------------------------------------GET-NOTE-BY-NOTE-ID-------------------------------------------------
+
 export const getNoteById = async (noteId: string) => {
     try {
         const note = await Note.findById(noteId);
@@ -64,7 +36,9 @@ export const getNoteById = async (noteId: string) => {
     }
 };
 
-// Get all notes by user ID
+
+//-------------------------------------------------------GET-NOTES-BY-USER-ID-------------------------------------------------
+
 export const getNotesByUserId = async (userId: string) => {
     try {
         const notes = await Note.find({ userId: new mongoose.Types.ObjectId(userId) });
@@ -76,7 +50,9 @@ export const getNotesByUserId = async (userId: string) => {
     }
 };
 
-// Update a note by ID
+
+//-------------------------------------------------------UPDATE-NOTE-BY-ID-------------------------------------------------
+
 export const updateNoteById = async (noteId: string, updateData: Partial<INote>) => {
     try {
         const note = await Note.findByIdAndUpdate(noteId, updateData, { new: true });
@@ -92,14 +68,15 @@ export const updateNoteById = async (noteId: string, updateData: Partial<INote>)
     }
 };
 
-// Delete a note by ID
-export const deleteNoteById = async (noteId: string) => {
+//-------------------------------------------------------DELETE-NOTE-BY-ID-------------------------------------------------
+
+export const deleteNoteById = async (noteId: string, userId: string) => {
     try {
-        const note = await Note.findByIdAndDelete(noteId);
+        const note = await Note.findOne({ _id: noteId, userId: new mongoose.Types.ObjectId(userId) });
         if (!note) {
-            logger.warn(`Note with ID ${noteId} not found for deletion`);
-            throw { status: httpStatus.NOT_FOUND, message: 'Note not found' };
+            throw { status: httpStatus.FORBIDDEN, message: "You are not authorized to delete this note" };
         }
+        await Note.findByIdAndDelete(noteId);
         logger.info(`Deleted note with ID ${noteId}`);
         return note;
     } catch (error) {
@@ -109,19 +86,22 @@ export const deleteNoteById = async (noteId: string) => {
 };
 
 
-//--------------------------------------------------------------------------------- 
-
-// move note to trash
+//-------------------------------------------------------MOVE-TO-TRASH-------------------------------------------------
+ 
 export const moveToTrash = async (noteId: string) => {
     return await Note.findByIdAndUpdate(noteId, { isTrash: true }, { new: true });
-  };
+};
   
-  // archive note
-  export const archiveNote = async (noteId: string) => {
+
+//-------------------------------------------------------ARCHIVE-NOTE-------------------------------------------------
+
+export const archiveNote = async (noteId: string) => {
     return await Note.findByIdAndUpdate(noteId, { isArchive: true }, { new: true });
-  };
+};
   
-  // unarchive note
-  export const unarchiveNote = async (noteId: string) => {
+
+//-------------------------------------------------------UNARCHIVE-NOTE-------------------------------------------------
+
+export const unarchiveNote = async (noteId: string) => {
     return await Note.findByIdAndUpdate(noteId, { isArchive: false }, { new: true });
-  };
+};

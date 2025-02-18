@@ -1,32 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { StatusCodes } from 'http-status-codes';
+import { body, validationResult } from 'express-validator';
 import logger from '../utils/logger';
 import Redis from 'ioredis';
-
-
-// //------------------------------------------------------------------------------
-
-// // export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
-// //     const token = req.header('Authorization')?.split(' ')[1];
-// //     // console.log("token ---------------------------," + token);
-    
-// //     if (!token) {
-// //         res.status(401).json({ message: 'Access denied' });
-// //         return;
-// //     }
-// //     try {
-
-// //          const tokenvalue = verifyToken(token); // jwt.verify(token, process.env.JWT_SECRET as string) as {id:string};
-// //         console.log(`decoded msg----------------------------------,`,tokenvalue );
-// //         req.body.userId = tokenvalue.id;
-// //         next();
-// //     } catch {
-// //         res.status(400).json({ message: 'Invalid token' });
-// //     }
-// // };
-
-// //-----------------------------------------------------------------------
 
 
 const redis = new Redis();
@@ -35,12 +12,20 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const token = req.header('Authorization')?.split(' ')[1];
 
     if (!token) {
-        logger.warn(`Access denied: No token provided - IP: ${req.ip}, Route: ${req.originalUrl}`);
+        logger.warn(`Access denied: No token provided`);
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Access denied' });
         return;
     }
 
     try {
+        // Check if the token is blacklisted (logged out)
+        const isBlacklisted = await redis.get(`blacklist:${token}`);
+        if (isBlacklisted) {
+            logger.warn(`Access denied: Token is blacklisted - IP: ${req.ip}, Route: ${req.originalUrl}`);
+            res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token is blacklisted' });
+            return;
+        }
+
         const cachedToken = await redis.get(`auth:${token}`);
         if (cachedToken) {
             req.body.userId = JSON.parse(cachedToken).id;
@@ -61,3 +46,18 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid token' });
     }
 };
+
+
+//-------------------------------------------------------------LOGOUT-VALIDATION----------------------------------------------------
+
+export const logoutValidation = [
+    // Ensure the token is present in the Authorization header
+    body('token').notEmpty().withMessage('Token is required').bail(),
+    (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      next();
+    }
+  ];

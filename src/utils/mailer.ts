@@ -2,7 +2,6 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import logger from "./logger";
 import { createRabbitMQConnection, QUEUE_NAME_FORGOT, QUEUE_NAME_REGISTER } from "../config/rabbitmq";
-import amqp from "amqplib";
 
 dotenv.config();
 
@@ -28,30 +27,34 @@ transporter.verify((error) => {
     }
 });
 
-// Function to enqueue email for RabbitMQ processing // forgot password email
-export const queueEmail = async (email: string, code: string): Promise<void> => {
+
+// Functions to enqueue email for RabbitMQ processing => queueForgotEmail, queueWelcomeEmail
+//-------------------------------------------------------forgot password email--------------------------------------------------
+export const queueForgotEmail = async (email: string, code: string): Promise<void> => {
     const { channel } = await createRabbitMQConnection();
     
-    const message = { 
+    const message = JSON.stringify({ 
         type: 'password_reset',
         email, 
         subject: "Password Reset Verification Code", 
         text: `Your verification code is: ${code}`, 
         code 
-    };
+    });
     
-    channel.sendToQueue(QUEUE_NAME_FORGOT, Buffer.from(JSON.stringify(message)), { persistent: true });
+    channel.sendToQueue(QUEUE_NAME_FORGOT, Buffer.from(message), { persistent: true });
     
-    logger.info(`📤 Queued email for ${email}`);
+    logger.info(`📤 Forgot email Queued for ${email}`);
 };
 
-// register email
+
+//-------------------------------------------------------------REGISTER EMAIL----------------------------------------------------
 export const queueWelcomeEmail = async (email: string, username: string) => {
-    try {
-      const connection = await amqp.connect('amqp://localhost');
-      const channel = await connection.createChannel();
+    // try {
+    //   const connection = await amqp.connect('amqp://localhost');
+    //   const channel = await connection.createChannel();
+      const {channel} = await createRabbitMQConnection();
   
-      await channel.assertQueue(QUEUE_NAME_REGISTER, { durable: true });
+    //   await channel.assertQueue(QUEUE_NAME_REGISTER, { durable: true });
   
       const message = JSON.stringify({
         type: 'welcome',
@@ -63,10 +66,10 @@ export const queueWelcomeEmail = async (email: string, username: string) => {
       channel.sendToQueue(QUEUE_NAME_REGISTER, Buffer.from(message), { persistent: true });
   
       logger.info(`📤 Welcome email queued for: ${email}`);
-      await channel.close();
-      await connection.close();
-    } catch (error) {
-      logger.error(`❌ Error queuing welcome email: ${error}`);
-      throw error;
-    }
+    //   await channel.close();
+    //   await connection.close();
+    // } catch (error) {
+    //   logger.error(`❌ Error queuing welcome email: ${error}`);
+    //   throw error;
+    // }
   };

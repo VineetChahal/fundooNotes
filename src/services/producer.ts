@@ -1,25 +1,32 @@
-import amqp from 'amqplib';
 import logger from '../utils/logger';
+import { QUEUE_NAME_FORGOT, QUEUE_NAME_REGISTER, createRabbitMQConnection } from '../config/rabbitmq';
 
-const QUEUE_NAME = 'EmailQueue';
+export async function queueEmail(email: string, data: { username?: string; verificationCode?: string }, type: 'forgot' | 'register') {
+    try {
+        const { channel } = await createRabbitMQConnection(); // Only get the channel, no need to close connection here
 
-export async function queueEmail(email: string, verificationCode: string) {
-  try {
-    const connection = await amqp.connect('amqp://localhost');
-    const channel = await connection.createChannel();
+        const queueName = type === 'forgot' ? QUEUE_NAME_FORGOT : QUEUE_NAME_REGISTER;
 
-    await channel.assertQueue(QUEUE_NAME, { durable: true });
+        const message = type === 'forgot' 
+            ? JSON.stringify({ 
+                type: 'password_reset',
+                email,
+                subject: "Password Reset Verification Code",
+                text: `Your verification code is: ${data.verificationCode}`,
+                verificationCode: data.verificationCode
+              }) 
+            : JSON.stringify({
+                type: 'welcome',
+                email,
+                subject: "Welcome to Our Platform",
+                text: `Welcome, ${data.username}! Thank you for registering.`
+              });
 
-    const message = JSON.stringify({ email, verificationCode });
-    console.log(`message being sent to ${QUEUE_NAME} is ${message}`);
-    
-    channel.sendToQueue(QUEUE_NAME, Buffer.from(message), { persistent: true });
+        console.log(`Message being sent to ${queueName}: ${message}`);
+        channel.sendToQueue(queueName, Buffer.from(message), { persistent: true });
 
-    logger.info(`📤 Message sent to queue: ${message}`);
-
-    await channel.close();
-    await connection.close();
-  } catch (error) {
-    logger.error(`❌ Error publishing message to queue: ${error}`);
-  }
+        logger.info(`📤 Message sent to queue: ${message}`);
+    } catch (error) {
+        logger.error(`❌ Error publishing message to queue: ${error}`);
+    }
 }

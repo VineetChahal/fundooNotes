@@ -49,6 +49,9 @@
 import { body } from 'express-validator';
 import logger from '../utils/logger';
 
+
+//-----------------------------------------------------------REGISTER-VALIDATION--------------------------------------------------
+
 export const registerValidation = [
     body('firstName')
         .isString()
@@ -100,6 +103,9 @@ export const registerValidation = [
             return true;
         }),
 ];
+
+
+//-------------------------------------------------------------LOGIN-VALIDATION----------------------------------------------------
 
 export const loginValidation = [
     body('email')
