@@ -6,15 +6,20 @@ import httpStatus from 'http-status';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET_REFRESH = process.env.JWT_SECRET_REFRESH!;
 
 
 //--------------------------------------------------------GENERATE-TOKEN-------------------------------------------------------
 
 export const generateToken = (payload: object) => {
     try {
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' });
+        if (!JWT_SECRET_REFRESH) {
+            throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: 'JWT_SECRET_REFRESH is not defined' };
+        }
+        const refreshToken = jwt.sign(payload, JWT_SECRET_REFRESH, { expiresIn: '7d' });
         logger.info('Token generated successfully');
-        return token;
+        return {token, refreshToken};
     } catch (error) {
         logger.error('Error generating token:', error);
         throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Error generating token' };

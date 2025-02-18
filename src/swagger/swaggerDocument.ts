@@ -22,7 +22,9 @@ const swaggerDocument = {
   tags: [
     { name: "Users", description: "User management operations" },
     { name: "Notes", description: "Note management operations" },
+    { name: "Auth", description: "Auth managemet operations - Refresh Token" },
   ],
+
   //-------------------------------------------------------paths------------------------------------------------
   paths: {
     //-------------------------------------------------------register user------------------------------------------------
@@ -54,6 +56,7 @@ const swaggerDocument = {
         },
       },
     },
+
     //-------------------------------------------------------login user------------------------------------------------
     "/users/login": {
       post: {
@@ -80,33 +83,8 @@ const swaggerDocument = {
         },
       },
     },
+
     //-----------------------------------------------------------LOGOUT-USER--------------------------------------------------------
-    // "/users/logout": {
-    //   post: {
-    //     summary: "Logs out the current user",
-    //     tags: ["Users"],
-    //     requestBody: {
-    //       required: true,
-    //       content: {
-    //         "application/json": {
-    //           schema: {
-    //             type: "object",
-    //             // properties: {
-    //             //   token: { type: "string" },
-    //             // },
-    //             // required: ["token"],
-    //           },
-    //         },
-    //       },
-    //     },
-    //     responses: {
-    //       "200": { description: "Logout successful" },
-    //       "400": { description: "Bad request - Token required" },
-    //       "401": { description: "Unauthorized - Invalid token" },
-    //       "500": { description: "Internal server error" },
-    //     },
-    //   },
-    // },
     "/users/logout": {
       post: {
         summary: "Logs out an existing user by invalidating their session",
@@ -131,28 +109,30 @@ const swaggerDocument = {
     },
 
     //-------------------------------------------------------get all notes------------------------------------------------
-    get: {
-      summary: "Get all notes of the logged-in user",
-      tags: ["Notes"],
-      security: [{ Bearer: [] }],
-      responses: {
-        "200": {
-          description: "Notes retrieved successfully",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  notes: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        _id: { type: "string" },
-                        title: { type: "string" },
-                        description: { type: "string" },
-                        color: { type: "string" },
-                        userId: { type: "string" },
+    "/": {
+      get: {
+        summary: "Get all notes of the logged-in user",
+        tags: ["Notes"],
+        security: [{ Bearer: [] }],
+        responses: {
+          "200": {
+            description: "Notes retrieved successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    notes: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          _id: { type: "string" },
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          color: { type: "string" },
+                          userId: { type: "string" },
+                        },
                       },
                     },
                   },
@@ -160,11 +140,12 @@ const swaggerDocument = {
               },
             },
           },
+          "401": { description: "Unauthorized" },
+          "500": { description: "Internal server error" },
         },
-        "401": { description: "Unauthorized" },
-        "500": { description: "Internal server error" },
       },
     },
+
     //-------------------------------------------------------forgot password------------------------------------------------
     "/users/forgotPassword": {
       post: {
@@ -190,7 +171,8 @@ const swaggerDocument = {
         },
       },
     },
-    //-------------------------------------------------------reset password------------------------------------------------
+
+    // ----------------------------------------reset password------------------------------------------------
     "/users/resetPassword": {
       post: {
         summary: "Resets the user's password",
@@ -217,9 +199,9 @@ const swaggerDocument = {
         },
       },
     },
-    //----------------------------------------------------------- note --------------------------------------------------
+
+    //----------------------------------------------------------- create-note --------------------------------------------------
     "/notes": {
-      // -------------------------------------------------------create note------------------------------------------------
       post: {
         summary: "Creates a new note",
         tags: ["Notes"],
@@ -246,6 +228,7 @@ const swaggerDocument = {
         },
       },
     },
+
     //-------------------------------------------------------get unique note------------------------------------------------
     "/notes/{id}": {
       get: {
@@ -266,133 +249,8 @@ const swaggerDocument = {
           "500": { description: "Server error" },
         },
       },
-      //-------------------------------------------------------update note------------------------------------------------
-      //     put: {
-      //       summary: "Updates a specific note by ID",
-      //       tags: ["Notes"],
-      //       security: [{ Bearer: [] }],
-      //       parameters: [
-      //         {
-      //           in: "path",
-      //           name: "id",
-      //           required: true,
-      //           schema: { type: "string" },
-      //         },
-      //       ],
-      //       requestBody: {
-      //         required: true,
-      //         content: {
-      //           "application/json": {
-      //             schema: {
-      //               type: "object",
-      //               properties: {
-      //                 title: { type: "string" },
-      //                 description: { type: "string" },
-      //                 color: { type: "string" },
-      //               },
-      //             },
-      //           },
-      //         },
-      //       },
-      //       responses: {
-      //         "200": { description: "Note updated successfully" },
-      //         "400": { description: "Bad request" },
-      //         "401": { description: "Unauthorized" },
-      //         "404": { description: "Note not found" },
-      //       },
-      //     },
-      //     //-------------------------------------------------------delete note------------------------------------------------
-      //     delete: {
-      //       summary: "Deletes a specific note by ID",
-      //       tags: ["Notes"],
-      //       security: [{ Bearer: [] }],
-      //       parameters: [
-      //         {
-      //           in: "path",
-      //           name: "id",
-      //           required: true,
-      //           schema: { type: "string" },
-      //         },
-      //       ],
-      //       responses: {
-      //         "200": { description: "Note deleted successfully" },
-      //         "400": { description: "Bad request" },
-      //         "401": { description: "Unauthorized" },
-      //         "404": { description: "Note not found" },
-      //       },
-      //     },
 
-      //     //-----------------------------------------------istrash and isarchive
-      //     "/notes/{id}/isTrash": {
-      //       patch: {
-      //         summary: "Marks a note as trashed or restores it",
-      //         tags: ["Notes"],
-      //         security: [{ Bearer: [] }],
-      //         parameters: [
-      //           {
-      //             in: "path",
-      //             name: "id",
-      //             required: true,
-      //             schema: { type: "string" },
-      //           },
-      //         ],
-      //         requestBody: {
-      //           required: true,
-      //           content: {
-      //             "application/json": {
-      //               schema: {
-      //                 type: "object",
-      //                 properties: {
-      //                   isTrash: { type: "boolean" },
-      //                 },
-      //               },
-      //             },
-      //           },
-      //         },
-      //         responses: {
-      //           "200": { description: "Note updated successfully" },
-      //           "400": { description: "Bad request" },
-      //           "401": { description: "Unauthorized" },
-      //           "404": { description: "Note not found" },
-      //         },
-      //       },
-      //     },
-      //     "/notes/{id}/isArchive": {
-      //       patch: {
-      //         summary: "Marks a note as archived or unarchives it",
-      //         tags: ["Notes"],
-      //         security: [{ Bearer: [] }],
-      //         parameters: [
-      //           {
-      //             in: "path",
-      //             name: "id",
-      //             required: true,
-      //             schema: { type: "string" },
-      //           },
-      //         ],
-      //         requestBody: {
-      //           required: true,
-      //           content: {
-      //             "application/json": {
-      //               schema: {
-      //                 type: "object",
-      //                 properties: {
-      //                   isArchive: { type: "boolean" },
-      //                 },
-      //               },
-      //             },
-      //           },
-      //         },
-      //         responses: {
-      //           "200": { description: "Note updated successfully" },
-      //           "400": { description: "Bad request" },
-      //           "401": { description: "Unauthorized" },
-      //           "404": { description: "Note not found" },
-      //         },
-      //       },
-      //     },
-      //   },
-      // },
+      //-------------------------------------------------------update note------------------------------------------------
       put: {
         summary: "Updates a specific note by ID",
         tags: ["Notes"],
@@ -427,6 +285,8 @@ const swaggerDocument = {
           "404": { description: "Note not found" },
         },
       },
+
+      //-------------------------------------------------------delete note------------------------------------------------
       delete: {
         summary: "Deletes a specific note by ID",
         tags: ["Notes"],
@@ -447,6 +307,8 @@ const swaggerDocument = {
         },
       },
     },
+
+    //-------------------------------------------------------istrash note------------------------------------------------
     "/notes/{id}/isTrash": {
       patch: {
         summary: "Marks a note as trashed or restores it",
@@ -481,6 +343,8 @@ const swaggerDocument = {
         },
       },
     },
+
+    //-------------------------------------------------------isarchive note------------------------------------------------
     "/notes/{id}/isArchive": {
       patch: {
         summary: "Marks a note as archived or unarchives it",
@@ -513,6 +377,56 @@ const swaggerDocument = {
           "401": { description: "Unauthorized" },
           "404": { description: "Note not found" },
         },
+      },
+    },
+  },
+
+  //-------------------------------------------------------refresh-token------------------------------------------------
+  "/auth/refresh": {
+    post: {
+      summary: "Refresh Access Token",
+      description: "Exchanges a valid refresh token for a new access token.",
+      tags: ["Auth"],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                refreshToken: {
+                  type: "string",
+                  description: "Valid refresh token",
+                },
+              },
+              required: ["refreshToken"],
+            },
+          },
+        },
+      },
+      responses: {
+        "200": {
+          description: "New access token generated",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  accessToken: {
+                    type: "string",
+                    description: "New JWT access token",
+                  },
+                  refreshToken: {
+                    type: "string",
+                    description: "New refresh token",
+                  },
+                },
+              },
+            },
+          },
+        },
+        "401": { description: "Refresh token required" },
+        "403": { description: "Invalid or expired refresh token" },
       },
     },
   },

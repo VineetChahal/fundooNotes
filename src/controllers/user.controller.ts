@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { findUserByEmail, registerUser, loginUser, logoutUser, resetPassword, forgotPassword } from '../services/user.services';
+import { findUserByEmail, registerUser, loginUser, logoutUser, resetPassword, forgotPassword} from '../services/user.services';
 import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger';
 import { redisClient } from '../config/redis'

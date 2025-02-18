@@ -75,10 +75,12 @@ export const loginUser = async (userData: { email: string; password: string }) =
             throw { status: httpStatus.UNAUTHORIZED, message: 'Invalid credentials' };
         }
         
-        const token = generateToken({ id: user._id, email: user.email });
-        await redisClient.set(`auth:${user._id}`, token, { EX: 3600 }); // Expires in 1 hour
+        // const token = generateToken({ id: user._id, email: user.email });
+        const { token, refreshToken } = generateToken(user._id);
+        await redisClient.set(`auth:${user._id}`, token, { EX: 900 }); // Expires in 15 hour
+        await redisClient.set(`refresh:${user._id}`, refreshToken, { EX: 604800 }); // Expires in 7d
         logger.info(`User logged in successfully with ID ${user._id}`);
-        return { token, user: { id: user._id, email: user.email, username: user.username } };
+        return { token, refreshToken, user: { id: user._id, email: user.email, username: user.username } };
     } catch (error) {
         logger.error('Error logging in user:', error);
         throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Error logging in' };
@@ -109,6 +111,7 @@ export const logoutUser = async (token: string): Promise<{ message: string; stat
 
         // Delete the token from Redis (logging out the user)
         await redisClient.del(`auth:${userId}`);
+        await redisClient.del(`refresh:${userId}`);
 
         logger.info('User logged out successfully');
         return { message: 'Logout successful', status: StatusCodes.OK };
