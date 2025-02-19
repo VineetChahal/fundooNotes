@@ -24,6 +24,7 @@ const noteSchema = new mongoose.Schema<INote>({
     isTrash: {type: Boolean, default: false},
     isArchive: {type: Boolean, default: false},
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    labels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Label" }], // Many-to-Many
     // drop coolection ->> istrash, isarchive, default true
 }, { timestamps: true });
 

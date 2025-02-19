@@ -60,6 +60,10 @@ class NoteRoutes {
             logger.info(`PATCH /notes.${req.params.id} - Archiving a note`);
             next();
         },this.NoteController.toggleArchive);
+
+
+        this.router.post("/label/add", this.NoteController.attachLabel);
+        this.router.post("/label/remove", this.NoteController.detachLabel);
     };
 
     public getRoutes = (): IRouter => {

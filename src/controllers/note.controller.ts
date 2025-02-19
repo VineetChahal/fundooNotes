@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger';
 import { Note } from '../models/note.model';
 import { redisClient } from '../config/redis';
-import {createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById, moveToTrash} from '../services/note.services';
+import {createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById, moveToTrash, addLabelToNote, removeLabelFromNote} from '../services/note.services';
 
 
 export default class NoteController {
@@ -267,4 +267,30 @@ export default class NoteController {
             });
         }
     };
+
+    public attachLabel = async (req: Request, res: Response) => {
+        try {
+            const { noteId, labelId } = req.body;
+            const updatedNote = await addLabelToNote(noteId, labelId);
+            res.status(200).json(updatedNote);
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: error instanceof Error ? error.message : 'An unknown error occurred',
+            })       
+        }
+    };
+
+
+    public detachLabel = async (req: Request, res: Response) => {
+        try {
+            const { noteId, labelId } = req.body;
+            const updatedNote = await removeLabelFromNote(noteId, labelId);
+            res.status(200).json(updatedNote);
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: error instanceof Error ? error.message : 'An unknown error occurred',
+            })        
+        }
+    };
+    
 }

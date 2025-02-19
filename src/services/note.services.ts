@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Note } from '../models/note.model';
 import { INote } from '../interfaces/note.interface';
+import { Label } from "../models/label.model";
 import logger from '../utils/logger';
 import httpStatus from 'http-status';
 
@@ -105,3 +106,45 @@ export const archiveNote = async (noteId: string) => {
 export const unarchiveNote = async (noteId: string) => {
     return await Note.findByIdAndUpdate(noteId, { isArchive: false }, { new: true });
 };
+
+
+//-------------------------------------------------------ADD-LABEL-TO-A-NOTE------------------------------------------
+
+export const addLabelToNote = async (noteId: string, labelId: string) => {
+    const note = await Note.findById(noteId);
+    const label = await Label.findById(labelId);
+    if (!note || !label) throw new Error("Note or Label not found");
+  
+    // Add label to note
+    if (!note.labels.includes(new mongoose.Types.ObjectId(labelId))) {
+      note.labels.push(new mongoose.Types.ObjectId(labelId));
+      await note.save();
+    }
+  
+    // Add note to label
+    if (!label.notes.includes(new mongoose.Types.ObjectId(noteId))) {
+      label.notes.push(new mongoose.Types.ObjectId(noteId));
+      await label.save();
+    }
+  
+    return note;
+  }
+
+
+//---------------------------------------------------REMOVE-LABEL-TO-A-NOTE---------------------------------------------
+
+export const removeLabelFromNote = async (noteId: string, labelId: string) => {
+    const note = await Note.findById(noteId);
+    const label = await Label.findById(labelId);
+    if (!note || !label) throw new Error("Note or Label not found");
+  
+    // Remove label from note
+    note.labels = note.labels.filter(id => id.toString() !== labelId);
+    await note.save();
+  
+    // Remove note from label
+    label.notes = label.notes.filter(id => id.toString() !== noteId);
+    await label.save();
+  
+    return note;
+  };
