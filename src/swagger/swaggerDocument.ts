@@ -381,6 +381,61 @@ const swaggerDocument = {
     },
   },
 
+  
+  //----------------------------------------------Attach-detach-label-to-a-note-----------------------------------
+  "/notes/{id}/label/{labelId}": {
+    post: {
+      summary: "Attach a label to a note",
+      tags: ["Notes"],
+      security: [{ Bearer: [] }],
+      parameters: [
+        {
+          in: "path",
+          name: "noteId",
+          required: true,
+          schema: { type: "string" },
+        },
+        {
+          in: "path",
+          name: "labelId",
+          required: true,
+          schema: { type: "string" },
+        },
+      ],
+      responses: {
+        "200": { description: "Label attached successfully" },
+        "400": { description: "Invalid note or label" },
+        "401": { description: "Unauthorized" },
+        "404": { description: "Note or label not found" },
+      },
+    },
+    delete: {
+      summary: "Detach a label from a note",
+      tags: ["Notes"],
+      security: [{ Bearer: [] }],
+      parameters: [
+        {
+          in: "path",
+          name: "noteId",
+          required: true,
+          schema: { type: "string" },
+        },
+        {
+          in: "path",
+          name: "labelId",
+          required: true,
+          schema: { type: "string" },
+        },
+      ],
+      responses: {
+        "200": { description: "Label detached successfully" },
+        "400": { description: "Invalid note or label" },
+        "401": { description: "Unauthorized" },
+        "404": { description: "Note or label not found" },
+      },
+    },
+  },
+
   //-------------------------------------------------------refresh-token------------------------------------------------
   "/auth/refresh": {
     post: {
