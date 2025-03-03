@@ -7,6 +7,7 @@ import httpStatus from 'http-status';
 import { queueForgotEmail , queueWelcomeEmail} from '../utils/mailer';
 import { StatusCodes } from 'http-status-codes';
 import { redisClient } from '../config/redis'
+// import { cookie } from 'express-validator';
 
 //-------------------------------------------------------FIND-USER-BY-EMAIL------------------------------------------------------
 
@@ -70,14 +71,28 @@ export const registerUser = async (userData: IUser) => {
 export const loginUser = async (userData: { email: string; password: string }) => {
     try {
         const user = await User.findOne({ email: userData.email }); 
-        if (!user || !(await bcrypt.compare(userData.password, user.password))) {
-            logger.warn('Invalid login credentials');
+        if (!user) {
+            logger.warn('User not found', { email: userData.email });
             throw { status: httpStatus.UNAUTHORIZED, message: 'Invalid credentials' };
         }
+
+        const isMatch = await bcrypt.compare(userData.password, user.password);
+        if (!isMatch) {
+            logger.warn(`Password mismatch for user ${userData.email}`);
+            throw { status: httpStatus.UNAUTHORIZED, message: 'Invalid credentials' };
+        }
+        // console.log("Entered Password:", userData.password);
+        // console.log("Stored Hashed Password:", user.password);
+        // console.log("Password Match:", isMatch);
+
+        // if (!user || !(await bcrypt.compare(userData.password, user.password))) {   
+        //     logger.warn('Invalid login credentials');
+        //     throw { status: httpStatus.UNAUTHORIZED, message: 'Invalid credentials' };
+        // }
         
         // const token = generateToken({ id: user._id, email: user.email });
-        const { token, refreshToken } = generateToken(user._id);
-        await redisClient.set(`auth:${user._id}`, token, { EX: 900 }); // Expires in 15 hour
+        const { token, refreshToken } = generateToken({id: user._id.toString()});
+        await redisClient.set(`auth:${user._id}`, token, { EX: 900 }); // Expires in 15 minutes
         await redisClient.set(`refresh:${user._id}`, refreshToken, { EX: 604800 }); // Expires in 7d
         logger.info(`User logged in successfully with ID ${user._id}`);
         return { token, refreshToken, user: { id: user._id, email: user.email, username: user.username } };
@@ -86,6 +101,7 @@ export const loginUser = async (userData: { email: string; password: string }) =
         throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Error logging in' };
     }
 };
+
 
 
 //----------------------------------------------------------LOGOUT-USER------------------------------------------------------------

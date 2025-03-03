@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger';
+import { INote } from "../interfaces/note.interface";
 import { Note } from '../models/note.model';
 import { redisClient } from '../config/redis';
-import {createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById, moveToTrash, addLabelToNote, removeLabelFromNote} from '../services/note.services';
+import {createNote, getNoteById, getNotesByUserId, updateNoteById, deleteNoteById, /*moveToTrash,*/ addLabelToNote, removeLabelFromNote,} from '../services/note.services';
 
 
 export default class NoteController {
@@ -76,21 +77,47 @@ export default class NoteController {
 
     public getAll = async (req: Request, res: Response): Promise<void> => {
         try {
-            const userId = req.body.userId;
+            console.log("Request Body: ", req.body);
+            
+            const userId = req.body.userId 
             const cacheKey = `notes:${userId}`;
 
-            const cachedNotes = await redisClient.get(cacheKey);
-            if (cachedNotes) {
-                logger.info('Serving notes from cache', { userId });
-                res.status(StatusCodes.OK).json({ notes: JSON.parse(cachedNotes) });
-                return;
+            // Check if notes exist in Redis as a list
+            const type = await redisClient.type(cacheKey);
+            console.log(`Key ${cacheKey} type: ${type}`);
+
+            let notes: INote[] = [];
+
+            if (type === "list") {
+                // Fetch notes from Redis list
+                const redisNotes = await redisClient.lRange(cacheKey, 0, -1);
+                console.log(`Redis cache hit for ${cacheKey}: ${redisNotes.length > 0 ? 'Yes' : 'No'}`);
+                if (redisNotes.length > 0) {
+                    logger.info('Serving notes from Redis list cache', { userId });
+                    notes = redisNotes.map((note: string) => JSON.parse(note) as INote);
+                    res.status(StatusCodes.OK).json({ notes });
+                    return;
+                }
+            } else if (type !== "none") {
+                // If the key exists but isn’t a list, reset it
+                await redisClient.del(cacheKey);
+                await redisClient.lPush(cacheKey, JSON.stringify([])); // Initialize as empty list
+                logger.info(`Reset ${cacheKey} to an empty list`);
             }
 
-            logger.info('Fetching notes for user', { userId });
-            const notes = await getNotesByUserId(userId);
+            // If no notes in Redis or Redis key doesn’t exist, fetch from MongoDB
+            logger.info('Fetching notes for user from MongoDB', { userId });
+            notes = await getNotesByUserId(userId);
 
-            // Cache the notes for 1 hour
-            await redisClient.setEx(cacheKey, 3600, JSON.stringify(notes));
+            // Cache the notes in Redis as a list (JSON strings)
+            if (notes.length > 0) {
+                await redisClient.del(cacheKey); // Clear any existing key
+                await Promise.all(notes.map((note: INote) => redisClient.lPush(cacheKey, JSON.stringify(note))));
+                logger.info(`Cached notes for ${cacheKey} in Redis list`, { userId });
+            } else {
+                await redisClient.lPush(cacheKey, JSON.stringify([])); // Cache empty list
+                logger.info(`Cached empty list for ${cacheKey}`, { userId });
+            }
 
             res.status(StatusCodes.OK).json({ notes });
         } catch (error: unknown) {
@@ -190,22 +217,34 @@ export default class NoteController {
 
     public moveToTrash = async (req: Request, res: Response): Promise<void> => {
         try {
-            const note = await moveToTrash(req.params.id);
+            const noteId = req.params.id;
+            const { isTrash } = req.body; // Optional body parameter
+    
+            // Find the note to get its current state
+            const note = await Note.findById(noteId);
             if (!note) {
                 res.status(StatusCodes.NOT_FOUND).json({ message: 'Note not found' });
                 return;
             }
     
-            // Fetch cached notes list
+            // Toggle isTrash if no body provided, otherwise use provided value
+            const newIsTrash = isTrash !== undefined ? isTrash : !note.isTrash;
+            const updatedNote = await Note.findByIdAndUpdate(
+                noteId,
+                { isTrash: newIsTrash },
+                { new: true }
+            );
+    
+            // Update Redis cache
             const cacheKey = `notes:${req.body.userId}`;
+            // const cacheKey = `notes:${updatedNote.userId}`;
             const cachedNotes = await redisClient.lRange(cacheKey, 0, -1);
-
+    
             if (cachedNotes.length > 0) {
                 for (let i = 0; i < cachedNotes.length; i++) {
                     const cachedNote = JSON.parse(cachedNotes[i]);
-                    if (cachedNote._id === req.params.id) {
-                        // Update only the changed note in the cache
-                        cachedNote.isTrashed = true;
+                    if (cachedNote._id === noteId) {
+                        cachedNote.isTrash = newIsTrash; // Use isTrash to match schema
                         await redisClient.lSet(cacheKey, i, JSON.stringify(cachedNote));
                         break;
                     }
@@ -213,17 +252,19 @@ export default class NoteController {
             }
     
             // Invalidate individual note cache
-            await redisClient.del(`note:${req.params.id}`);
+            await redisClient.del(`note:${noteId}`);
     
-            logger.info('Note moved to trash', { noteId: req.params.id });
-            res.status(StatusCodes.OK).json({ message: 'Note moved to trash', note });
+            logger.info(`Note ${newIsTrash ? 'moved to trash' : 'restored from trash'}`, { noteId });
+            res.status(StatusCodes.OK).json({ 
+                message: `Note ${newIsTrash ? 'moved to trash' : 'restored from trash'}`, 
+                note: updatedNote 
+            });
         } catch (error: unknown) {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: error instanceof Error ? error.message : 'An unknown error occurred',
             });
         }
     };
-
 
     //--------------------------------------------------------TOGGLE-ARCHIVE-------------------------------------------------
 

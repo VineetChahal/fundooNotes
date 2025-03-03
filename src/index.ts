@@ -7,24 +7,17 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument } from './swagger/swaggerDocument';
 import logger from './utils/logger';
 import authRoutes from "./routes/auth.route";
-// import { startConsumer } from "./rabbitMQ/consumer";
-
-
-//-----------------------------------------------------------------------------
-
-// setupSwagger(app);
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-// connectDB();
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => console.log(`🚀 Server is running at http://localhost:${PORT}/api`));
-
-//-----------------------------------------------------------------------------
-
-
+import cors from 'cors';  // Import the CORS middleware
+// import cookie from 'cookie-parser'
 dotenv.config();
 
 const app = express();
+
+// Enable CORS with specific settings
+app.use(cors({
+    origin: ["http://localhost:3000","http://localhost:3001"], // Allow frontend to access backend
+    credentials: true, // Allow cookies, authorization headers, etc.
+}));
 
 // Setup Swagger
 setupSwagger(app);
@@ -33,8 +26,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(express.json());
 app.use('/api', routes());
 app.use("/auth", authRoutes);
-
-
+// app.use(cookie())
 // Connect to Database
 connectDB()
     .then(() => logger.info('Database connected successfully'))

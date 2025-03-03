@@ -7,7 +7,7 @@ const swaggerDocument = {
   },
   servers: [
     {
-      url: "http://localhost:3000/api",
+      url: "http://localhost:5000/api",
     },
   ],
   components: {
@@ -108,44 +108,6 @@ const swaggerDocument = {
       },
     },
 
-    //-------------------------------------------------------get all notes------------------------------------------------
-    "/": {
-      get: {
-        summary: "Get all notes of the logged-in user",
-        tags: ["Notes"],
-        security: [{ Bearer: [] }],
-        responses: {
-          "200": {
-            description: "Notes retrieved successfully",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    notes: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          _id: { type: "string" },
-                          title: { type: "string" },
-                          description: { type: "string" },
-                          color: { type: "string" },
-                          userId: { type: "string" },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          "401": { description: "Unauthorized" },
-          "500": { description: "Internal server error" },
-        },
-      },
-    },
-
     //-------------------------------------------------------forgot password------------------------------------------------
     "/users/forgotPassword": {
       post: {
@@ -200,8 +162,90 @@ const swaggerDocument = {
       },
     },
 
-    //----------------------------------------------------------- create-note --------------------------------------------------
+
+    // //-------------------------------------------------------get all notes------------------------------------------------
+    //   get: {
+    //     summary: "Get all notes of the logged-in user",
+    //     tags: ["Notes"],
+    //     security: [{ Bearer: [] }],
+    //     responses: {
+    //       "200": {
+    //         description: "Notes retrieved successfully",
+    //         content: {
+    //           "application/json": {
+    //             schema: {
+    //               type: "array",
+    //               properties: {
+    //                 notes: {
+    //                   type: "array",
+    //                   items: {
+    //                     type: "object",
+    //                     properties: {
+    //                       _id: { type: "string" },
+    //                       title: { type: "string" },
+    //                       description: { type: "string" },
+    //                       color: { type: "string" },
+    //                       userId: { type: "string" },
+    //                     },
+    //                   },
+    //                   // default: [],
+    //                 },
+    //               },
+    //               // required:["notes"],
+    //             },
+    //           },
+    //         },
+    //       },
+    //       "401": { description: "Unauthorized" },
+    //       "500": { description: "Internal server error" },
+    //     },
+    //   },
+
+
+    //----------------------------------------------------------- notes --------------------------------------------------
     "/notes": {
+
+      //-------------------------------------------------------get all notes------------------------------------------------
+      get: {
+        summary: "Get all notes of the logged-in user",
+        tags: ["Notes"],
+        security: [{ Bearer: [] }],
+        responses: {
+          "200": {
+            description: "Notes retrieved successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  properties: {
+                    notes: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          _id: { type: "string" },
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          color: { type: "string" },
+                          userId: { type: "string" },
+                        },
+                      },
+                      // default: [],
+                    },
+                  },
+                  // required:["notes"],
+                },
+              },
+            },
+          },
+          "401": { description: "Unauthorized" },
+          "500": { description: "Internal server error" },
+        },
+      },
+      
+
+    //----------------------------------------------------------- create-note --------------------------------------------------
+
       post: {
         summary: "Creates a new note",
         tags: ["Notes"],

@@ -56,6 +56,7 @@ class NoteRoutes {
             logger.info(`PATCH /notes/${req.params.id} - Trashing a note`);
             next();
         }, this.NoteController.moveToTrash);
+        
         this.router.patch('/:id/isArchive', authenticate, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             logger.info(`PATCH /notes.${req.params.id} - Archiving a note`);
             next();
