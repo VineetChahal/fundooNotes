@@ -62,7 +62,6 @@ class NoteRoutes {
             next();
         },this.NoteController.toggleArchive);
 
-
         this.router.post("/label/add", this.NoteController.attachLabel);
         this.router.post("/label/remove", this.NoteController.detachLabel);
     };
